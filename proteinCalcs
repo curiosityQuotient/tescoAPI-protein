@@ -1,0 +1,44 @@
+
+########### Python 2.7 #############
+import httplib, urllib, base64
+import json
+
+headers = {
+    # Request headers
+    'Ocp-Apim-Subscription-Key': '7874cffc3ae0461da3cf52d9fd0ccf70',
+}
+
+params = urllib.urlencode({
+})
+query = 'tesco'
+offset = 0
+limit = 100
+pages = 50
+
+try:
+    conn = httplib.HTTPSConnection('dev.tescolabs.com')
+    conn.request("GET", "/grocery/products/?query="+query+"&offset="+str(offset)+"&limit="+str(limit)+"&%s" % params, "{body}", headers)
+    response = conn.getresponse()
+    data = response.read()
+    DATA = json.loads(data)
+    #print(data)
+    conn.close()
+except Exception as e:
+    print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+for i in range(pages):
+    offset = 100*(i+1)
+
+    try:
+        conn = httplib.HTTPSConnection('dev.tescolabs.com')
+        conn.request("GET", "/grocery/products/?query="+query+"&offset="+str(offset)+"&limit="+str(limit)+"&%s" % params, "{body}", headers)
+
+        response = conn.getresponse()
+        data = response.read()
+        NEWDATA = json.loads(data)
+        DATA['uk']['ghs']['products']['results'].extend(NEWDATA['uk']['ghs']['products']['results'])
+        conn.close()
+    except Exception as e:
+        print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+####################################
